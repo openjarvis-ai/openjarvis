@@ -4,8 +4,6 @@ node_modules
 package-lock.json
 
 # Build outputs
-.next/
-out/
 build/
 dist/
 *.tsbuildinfo
@@ -13,3 +11,17 @@ dist/
 # Deployment
 .vercel
 .turbo
+package-lock.json
+
+# Next.js build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+
+# Local Turso DB (when using file:)
+data/

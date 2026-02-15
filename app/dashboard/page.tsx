@@ -1,15 +1,69 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { StatCard } from "@/components/ui/SharedUI";
+import { StatCard, LoadingSpinner, EmptyState } from "@/components/ui/SharedUI";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { mockDashboardStats, mockRecordings, mockWorkflows } from "@/lib/mock-data";
 import { formatDuration } from "@/lib/utils";
 import { Video, GitBranch, MessageSquare, Clock } from "lucide-react";
 import Link from "next/link";
+import type { DashboardStats, Recording, Workflow } from "@/types";
 
 export default function DashboardPage() {
-  const stats = mockDashboardStats;
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const res = await fetch("/api/dashboard");
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message ?? "Failed to fetch");
+        if (json.success && json.data) {
+          setStats(json.data.stats);
+          setRecordings(json.data.recordings ?? []);
+          setWorkflows(json.data.workflows ?? []);
+        } else {
+          throw new Error("Invalid response");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24">
+        <LoadingSpinner size="lg" />
+        <p className="mt-4 text-sm text-surface-500">Loading dashboard…</p>
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <EmptyState
+        title="Failed to load dashboard"
+        description={error ?? "An unexpected error occurred."}
+        action={
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="btn-secondary"
+          >
+            Retry
+          </button>
+        }
+      />
+    );
+  }
 
   return (
     <>
@@ -51,10 +105,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <RecentActivity
-        recordings={mockRecordings}
-        workflows={mockWorkflows}
-      />
+      <RecentActivity recordings={recordings} workflows={workflows} />
     </>
   );
 }

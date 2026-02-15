@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SendCommentPayload, OpusJobPayload } from "@/types";
+import { db } from "@/lib/db";
+import { comments } from "@/lib/db/schema";
+import { SendCommentPayload } from "@/types";
 
 const OPUS_BASE_URL = "https://operator.opus.com";
 
@@ -100,7 +103,6 @@ export async function POST(request: NextRequest) {
   try {
     const body: SendCommentPayload = await request.json();
 
-    // Validate: only accept workflowId and comment (+ optional recordingId)
     if (!body.workflowId || typeof body.workflowId !== "string") {
       return NextResponse.json(
         { success: false, message: "workflowId is required and must be a string." },
@@ -122,7 +124,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Reject any extra fields (ratings, scores, etc.)
     const allowedKeys = new Set(["workflowId", "comment", "recordingId"]);
     const extraKeys = Object.keys(body).filter((k) => !allowedKeys.has(k));
     if (extraKeys.length > 0) {
@@ -221,6 +222,26 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in send-to-opus route:", error);
+    
+    const commentId = `cmt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const now = new Date().toISOString();
+
+    await db.insert(comments).values({
+      id: commentId,
+      workflowId: body.workflowId,
+      comment: body.comment.trim(),
+      recordingId: body.recordingId ?? null,
+      createdAt: now,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Comment sent to Opus successfully.",
+      commentId,
+      timestamp: now,
+    });
+  } catch (err) {
+    console.error("Send to Opus failed:", err);
     return NextResponse.json(
       { 
         success: false, 

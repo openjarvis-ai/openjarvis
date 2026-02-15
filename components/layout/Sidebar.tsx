@@ -69,7 +69,7 @@ export function Sidebar() {
             </div>
             {!collapsed && (
               <span className="font-display text-lg font-medium tracking-tight truncate">
-                OpenClaw
+                OpenJarvis
               </span>
             )}
           </div>

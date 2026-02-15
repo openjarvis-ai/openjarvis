@@ -35,7 +35,7 @@ export interface Workflow {
   description: string;
   steps: WorkflowStep[];
   metadata: {
-    source: "OpenClaw" | "Opus";
+    source: "OpenJarvis" | "Opus";
     version: string;
     executionTime: number; // ms
     model: string;
