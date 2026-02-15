@@ -211,14 +211,13 @@ try {
 
 ## Common Error Messages
 
-- `"workflowId is required and must be a string."` - Missing or invalid workflowId
-- `"Workflow {workflowId} is not accessible in workspace"` - Invalid workflowId or no access (403 error)
 - `"comment is required and must be a non-empty string."` - Missing or empty comment
 - `"comment must be 2000 characters or fewer."` - Comment too long
 - `"Opus service is not properly configured."` - Missing OPUS_SERVICE_KEY in environment
-- `"Failed to initiate Opus job"` - Opus API initiation failed (check workflowId and service key)
+- `"Failed to initiate Opus job"` - Opus API initiation failed (check service key and network connection)
 - `"Failed to execute Opus job"` - Opus API execution failed (check payload format)
 - `"Unable to parse comment into valid Opus data format."` - Invalid JSON or unsupported format
+- `"Workflow m610yMivI2rx2Sdy is not accessible in workspace"` - Hardcoded workflow ID not accessible (403 error, check Opus workspace access)
 
 ## Testing with cURL
 
@@ -227,7 +226,6 @@ try {
 curl -X POST http://localhost:3000/api/send-to-opus \
   -H "Content-Type: application/json" \
   -d '{
-    "workflowId": "m610yMivI2rx2Sdy",
     "comment": "{\"date\":\"2025-01-15\",\"reviewer_id\":\"rev_12345\",\"feedback_text\":\"Great work!\"}"
   }'
 
@@ -235,13 +233,11 @@ curl -X POST http://localhost:3000/api/send-to-opus \
 curl -X POST http://localhost:3000/api/send-to-opus \
   -H "Content-Type: application/json" \
   -d '{
-    "workflowId": "m610yMivI2rx2Sdy",
     "comment": "The workflow is missing a step."
   }'
 
-# Upload Screenshots
+# Upload Screenshots  
 curl -X POST http://localhost:3000/api/send-screenshots-to-opus \
-  -F "workflowId=m610yMivI2rx2Sdy" \
   -F "recordingId=rec_123" \
   -F "screenshot_0=@/path/to/screenshot1.png" \
   -F "screenshot_1=@/path/to/screenshot2.png"

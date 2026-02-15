@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         jobExecutionId,
         jobPayloadSchemaInstance: {
-          screen_captures: {
+          screen_capture_images: {
             value: fileUrls,
             type: "array_files",
             displayName: "Screen Capture Images",
