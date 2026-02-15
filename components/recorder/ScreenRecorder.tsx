@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useScreenRecorder } from "@/hooks/useScreenRecorder";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
@@ -21,8 +21,6 @@ import {
   CircleDot,
   Send,
   ImageIcon,
-  X,
-  Images,
 } from "lucide-react";
 
 const sourceOptions: { value: RecordingSource; label: string; icon: typeof Monitor; desc: string }[] = [
@@ -51,24 +49,6 @@ export function ScreenRecorder() {
   const [sendingFrames, setSendingFrames] = useState(false);
   const [workflowIdForOpus, setWorkflowIdForOpus] = useState("");
   const [lastRecordingId, setLastRecordingId] = useState<string | null>(null);
-  const [screenshotUrls, setScreenshotUrls] = useState<string[] | null>(null);
-  const [viewingFrameIndex, setViewingFrameIndex] = useState<number | null>(null);
-  const [extractingToView, setExtractingToView] = useState(false);
-
-  // Revoke object URLs when clearing or unmounting
-  useEffect(() => {
-    return () => {
-      if (screenshotUrls) screenshotUrls.forEach((u) => URL.revokeObjectURL(u));
-    };
-  }, [screenshotUrls]);
-
-  const clearScreenshots = useCallback(() => {
-    if (screenshotUrls) {
-      screenshotUrls.forEach((u) => URL.revokeObjectURL(u));
-      setScreenshotUrls(null);
-    }
-    setViewingFrameIndex(null);
-  }, [screenshotUrls]);
 
   const handleUpload = async () => {
     if (!recordedBlob) return;
@@ -94,28 +74,6 @@ export function ScreenRecorder() {
     }
   };
 
-  const handleViewScreenshots = async () => {
-    if (!recordedBlob) return;
-    setExtractingToView(true);
-    clearScreenshots();
-    try {
-      toast("Extracting one frame per second…", "info");
-      const frames = await extractFramesOnePerSecond(recordedBlob, duration);
-      if (frames.length === 0) {
-        toast("No frames could be extracted from the video.", "error");
-        setExtractingToView(false);
-        return;
-      }
-      const urls = frames.map((blob) => URL.createObjectURL(blob));
-      setScreenshotUrls(urls);
-      toast(`Showing ${urls.length} screenshot(s).`, "success");
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Failed to extract frames.", "error");
-    } finally {
-      setExtractingToView(false);
-    }
-  };
-
   const handleSendFramesToOpus = async () => {
     if (!recordedBlob) return;
     setSendingFrames(true);
@@ -127,9 +85,6 @@ export function ScreenRecorder() {
         setSendingFrames(false);
         return;
       }
-      const urls = frames.map((blob) => URL.createObjectURL(blob));
-      if (screenshotUrls) screenshotUrls.forEach((u) => URL.revokeObjectURL(u));
-      setScreenshotUrls(urls);
       toast(`Sending ${frames.length} screenshot(s) to Opus…`, "info");
       const formData = new FormData();
       if (workflowIdForOpus.trim()) formData.append("workflowId", workflowIdForOpus.trim());
@@ -340,25 +295,12 @@ export function ScreenRecorder() {
                 <button
                   onClick={() => {
                     setLastRecordingId(null);
-                    clearScreenshots();
                     resetRecording();
                   }}
                   className="btn-ghost px-4 py-2.5 rounded-xl"
                 >
                   <RotateCcw className="w-4 h-4" />
                   New Recording
-                </button>
-                <button
-                  onClick={handleViewScreenshots}
-                  disabled={extractingToView}
-                  className="btn-secondary px-4 py-2.5 rounded-xl"
-                >
-                  {extractingToView ? (
-                    <ImageIcon className="w-4 h-4 animate-pulse" />
-                  ) : (
-                    <Images className="w-4 h-4" />
-                  )}
-                  {extractingToView ? "Extracting…" : "View screenshots"}
                 </button>
                 <button
                   onClick={() => downloadRecording()}
@@ -407,98 +349,6 @@ export function ScreenRecorder() {
               </div>
             </div>
           </div>
-
-          {/* Screenshot gallery */}
-          {screenshotUrls && screenshotUrls.length > 0 && (
-            <div className="p-6 border-t border-surface-200 dark:border-surface-700">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-surface-800 dark:text-surface-200">
-                  Screenshots ({screenshotUrls.length} frames, 1 per second)
-                </h4>
-                <button
-                  type="button"
-                  onClick={clearScreenshots}
-                  className="text-xs font-medium text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
-                >
-                  Hide
-                </button>
-              </div>
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-72 overflow-y-auto rounded-xl p-1">
-                {screenshotUrls.map((url, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setViewingFrameIndex(i)}
-                    className="aspect-video rounded-lg overflow-hidden border border-surface-200 dark:border-surface-700 hover:ring-2 ring-brand-500 focus:outline-none focus:ring-2 ring-offset-2 ring-offset-surface-0 dark:ring-offset-surface-900"
-                  >
-                    <img
-                      src={url}
-                      alt={`Frame at ${i}s`}
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="sr-only">View frame at {i}s</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Full-size screenshot modal */}
-      {viewingFrameIndex !== null && screenshotUrls && screenshotUrls[viewingFrameIndex] && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setViewingFrameIndex(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="View screenshot"
-        >
-          <button
-            type="button"
-            onClick={() => setViewingFrameIndex(null)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-surface-800/80 text-white hover:bg-surface-700"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2 max-w-[90vw] max-h-[90vh]">
-            {viewingFrameIndex > 0 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setViewingFrameIndex(viewingFrameIndex - 1);
-                }}
-                className="p-2 rounded-full bg-surface-800/80 text-white hover:bg-surface-700 shrink-0"
-                aria-label="Previous"
-              >
-                ←
-              </button>
-            )}
-            <img
-              src={screenshotUrls[viewingFrameIndex]}
-              alt={`Frame at ${viewingFrameIndex}s`}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-            {screenshotUrls.length > 1 && viewingFrameIndex < screenshotUrls.length - 1 && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setViewingFrameIndex(viewingFrameIndex + 1);
-                }}
-                className="p-2 rounded-full bg-surface-800/80 text-white hover:bg-surface-700 shrink-0"
-                aria-label="Next"
-              >
-                →
-              </button>
-            )}
-          </div>
-          <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/90 bg-black/50 px-3 py-1 rounded-full">
-            Frame {viewingFrameIndex + 1} of {screenshotUrls.length} ({viewingFrameIndex}s)
-          </p>
         </div>
       )}
     </div>

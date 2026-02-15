@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Hero3DScene } from "@/components/landing/Hero3DScene";
 import {
   Video,
   GitBranch,
@@ -85,8 +86,9 @@ export default function LandingPage() {
       </motion.header>
 
       {/* Hero */}
-      <section className="pt-36 pb-28 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative pt-36 pb-28 px-4 sm:px-6 lg:px-8 min-h-[80vh] flex flex-col justify-center">
+        <Hero3DScene />
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
