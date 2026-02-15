@@ -72,25 +72,7 @@ export default function LandingPage() {
               OpenJarvis
             </span>
           </Link>
-          <nav className="flex items-center gap-4 sm:gap-6">
-            <Link
-              href="/dashboard"
-              className="hidden sm:inline text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/recorder"
-              className="hidden sm:inline text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors"
-            >
-              Recorder
-            </Link>
-            <Link
-              href="/workflows"
-              className="hidden sm:inline text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors"
-            >
-              Workflows
-            </Link>
+          <nav className="flex items-center">
             <Link
               href="/dashboard"
               className="btn-primary text-sm px-4 py-2 shrink-0"
@@ -224,26 +206,6 @@ export default function LandingPage() {
               OpenJarvis
             </span>
           </div>
-          <nav className="flex items-center gap-8">
-            <Link
-              href="/dashboard"
-              className="text-sm text-surface-500 hover:text-surface-900 transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/recorder"
-              className="text-sm text-surface-500 hover:text-surface-900 transition-colors"
-            >
-              Recorder
-            </Link>
-            <Link
-              href="/workflows"
-              className="text-sm text-surface-500 hover:text-surface-900 transition-colors"
-            >
-              Workflows
-            </Link>
-          </nav>
         </div>
       </footer>
     </div>

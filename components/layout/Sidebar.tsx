@@ -57,10 +57,12 @@ export function Sidebar() {
         )}
       >
         {/* Logo */}
-        <div
+        <Link
+          href="/"
+          onClick={() => setMobileOpen(false)}
           className={cn(
             "flex items-center h-16 px-5 border-b border-surface-200/60",
-            "dark:border-surface-800/60"
+            "dark:border-surface-800/60 hover:bg-surface-50/50 dark:hover:bg-surface-800/30 transition-colors"
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
@@ -73,7 +75,7 @@ export function Sidebar() {
               </span>
             )}
           </div>
-        </div>
+        </Link>
 
         {/* Nav links */}
         <nav className="flex-1 px-3 py-4 space-y-1">
