@@ -8,7 +8,7 @@ export default function RecorderPage() {
     <>
       <PageHeader
         title="Screen Recorder"
-        description="Record your screen, window, or browser tab"
+        description="Record your screen, window, or browser tab. Capture and send to Opus."
       />
       <ScreenRecorder />
     </>
