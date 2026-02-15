@@ -58,6 +58,30 @@ export interface SendCommentResponse {
   message: string;
   commentId?: string;
   timestamp?: string;
+  opusJobId?: string;
+}
+
+// ─── Opus API Types ──────────────────────────────────────────
+export interface OpusReviewFeedback {
+  date: string; // ISO date format: "2025-01-15"
+  reviewer_id: string;
+  feedback_text: string;
+}
+
+export interface OpusSessionMetadata {
+  timestamp: string; // ISO datetime format: "2025-07-23T15:30"
+  session_id: string;
+  active_applications: string[];
+}
+
+export interface OpusScreenCapture {
+  image_file: string; // filename or path
+}
+
+export interface OpusJobPayload {
+  reviewFeedback?: OpusReviewFeedback;
+  sessionMetadata?: OpusSessionMetadata;
+  screenCaptures?: OpusScreenCapture[];
 }
 
 // ─── API Response Types ──────────────────────────────────────
