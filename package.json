@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:init": "tsx scripts/init-db.ts"
+    "db:init": "tsx scripts/init-db.ts",
+    "db:schema-turso": "turso db shell openjarvis < scripts/schema.sql",
+    "db:seed-turso": "turso db shell openjarvis < scripts/seed.sql"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
