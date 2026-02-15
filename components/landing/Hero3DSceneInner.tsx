@@ -40,6 +40,107 @@ const crabMaterial = {
   },
 };
 
+function CrabMesh() {
+  return (
+    <group>
+      {/* Body / shell */}
+      <mesh scale={[1.3, 0.85, 1.1]}>
+        <sphereGeometry args={[0.45, 32, 32]} />
+        <meshStandardMaterial {...crabMaterial.body} />
+      </mesh>
+      {/* Eyes */}
+      <mesh position={[-0.22, 0.32, 0.35]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial {...crabMaterial.eye} />
+      </mesh>
+      <mesh position={[0.22, 0.32, 0.35]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial {...crabMaterial.eye} />
+      </mesh>
+      <mesh position={[-0.22, 0.35, 0.38]}>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshStandardMaterial color="#1d2939" />
+      </mesh>
+      <mesh position={[0.22, 0.35, 0.38]}>
+        <sphereGeometry args={[0.04, 8, 8]} />
+        <meshStandardMaterial color="#1d2939" />
+      </mesh>
+      {/* Left claw */}
+      <group position={[-0.6, 0.1, 0.3]} rotation={[0, 0, Math.PI / 6]}>
+        <mesh position={[-0.25, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.06, 0.08, 0.5, 12]} />
+          <meshStandardMaterial {...crabMaterial.claw} />
+        </mesh>
+        <mesh position={[-0.5, 0.08, 0.1]} rotation={[0.3, 0, Math.PI / 2]}>
+          <boxGeometry args={[0.12, 0.25, 0.15]} />
+          <meshStandardMaterial {...crabMaterial.claw} />
+        </mesh>
+        <mesh position={[-0.5, -0.08, 0.1]} rotation={[-0.3, 0, Math.PI / 2]}>
+          <boxGeometry args={[0.12, 0.2, 0.12]} />
+          <meshStandardMaterial {...crabMaterial.claw} />
+        </mesh>
+      </group>
+      {/* Right claw */}
+      <group position={[0.6, 0.1, 0.3]} rotation={[0, 0, -Math.PI / 6]}>
+        <mesh position={[0.25, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.06, 0.08, 0.5, 12]} />
+          <meshStandardMaterial {...crabMaterial.claw} />
+        </mesh>
+        <mesh position={[0.5, 0.08, 0.1]} rotation={[0.3, 0, Math.PI / 2]}>
+          <boxGeometry args={[0.12, 0.25, 0.15]} />
+          <meshStandardMaterial {...crabMaterial.claw} />
+        </mesh>
+        <mesh position={[0.5, -0.08, 0.1]} rotation={[-0.3, 0, Math.PI / 2]}>
+          <boxGeometry args={[0.12, 0.2, 0.12]} />
+          <meshStandardMaterial {...crabMaterial.claw} />
+        </mesh>
+      </group>
+      {/* Legs */}
+      {[-0.15, -0.05, 0.05, 0.15].map((z, i) => (
+        <group key={`leg-l-${i}`} position={[-0.5, -0.15, z]} rotation={[0.4, 0, Math.PI / 4 + i * 0.05]}>
+          <mesh rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.03, 0.02, 0.35, 8]} />
+            <meshStandardMaterial {...crabMaterial.claw} />
+          </mesh>
+        </group>
+      ))}
+      {[-0.15, -0.05, 0.05, 0.15].map((z, i) => (
+        <group key={`leg-r-${i}`} position={[0.5, -0.15, z]} rotation={[0.4, 0, -Math.PI / 4 - i * 0.05]}>
+          <mesh rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.03, 0.02, 0.35, 8]} />
+            <meshStandardMaterial {...crabMaterial.claw} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+const babyCrabPositions: [number, number, number][] = [
+  [-2.0, 0.4, -1.2],
+  [2.1, -0.3, -1.0],
+  [-1.8, -0.7, 0.9],
+  [1.9, 0.5, 0.8],
+  [-1.0, 1.3, -0.9],
+  [1.2, -1.0, -0.6],
+];
+
+function BabyCrab({ position }: { position: [number, number, number] }) {
+  const group = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (group.current) {
+      group.current.rotation.y = state.clock.elapsedTime * 0.25;
+    }
+  });
+  return (
+    <Float speed={2.2} rotationIntensity={0.15} floatIntensity={0.5}>
+      <group ref={group} position={position} scale={0.35}>
+        <CrabMesh />
+      </group>
+    </Float>
+  );
+}
+
 function FloatingCrab() {
   const group = useRef<THREE.Group>(null);
   const leftClaw = useRef<THREE.Group>(null);
@@ -187,6 +288,9 @@ function Scene() {
       <directionalLight position={[-5, -5, 5]} intensity={0.5} color="#78bfff" />
       <pointLight position={[0, 2, 2]} intensity={0.8} color="#0a7cff" />
       <FloatingCrab />
+      {babyCrabPositions.map((pos, i) => (
+        <BabyCrab key={i} position={pos} />
+      ))}
       <Particles />
     </>
   );

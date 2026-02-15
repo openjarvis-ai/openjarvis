@@ -45,9 +45,9 @@ export default function SettingsPage() {
           onClick={() => {
             try {
               localStorage.removeItem("openjarvis-onboarding-dismissed");
-              window.location.reload();
+              window.location.href = "/dashboard";
             } catch {
-              window.location.reload();
+              window.location.href = "/dashboard";
             }
           }}
           className="btn-secondary"
