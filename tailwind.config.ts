@@ -11,8 +11,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["'DM Sans'", "system-ui", "sans-serif"],
-        display: ["'Instrument Serif'", "Georgia", "serif"],
-        mono: ["'JetBrains Mono'", "monospace"],
+        display: ["'DM Sans'", "system-ui", "sans-serif"],
+        mono: ["'DM Sans'", "system-ui", "sans-serif"],
       },
       colors: {
         brand: {
