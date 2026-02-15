@@ -1,8 +1,6 @@
 {
-  "/page": "app/page.js",
+  "/api/send-screenshots-to-opus/route": "app/api/send-screenshots-to-opus/route.js",
+  "/api/upload-recording/route": "app/api/upload-recording/route.js",
   "/recorder/page": "app/recorder/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/api/workflows/route": "app/api/workflows/route.js",
-  "/workflows/page": "app/workflows/page.js"
+  "/dashboard/page": "app/dashboard/page.js"
 }
