@@ -140,7 +140,7 @@ export function useScreenRecorder(): UseScreenRecorderReturn {
           cleanup();
         };
 
-        mediaRecorder.start(15000); // Collect data every 15 seconds
+        mediaRecorder.start(10000); // Collect data every 10 seconds
         setDuration(0);
         setStatus("recording");
         startTimer();

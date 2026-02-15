@@ -78,8 +78,8 @@ export function ScreenRecorder() {
     if (!recordedBlob) return;
     setSendingFrames(true);
     try {
-      toast("Extracting one frame per second…", "info");
-      const frames = await extractFramesOnePerSecond(recordedBlob, duration);
+      toast("Extracting one frame per 10 seconds…", "info");
+      const frames = await extractFramesOnePerSecond(recordedBlob, duration, 10);
       if (frames.length === 0) {
         toast("No frames could be extracted from the video.", "error");
         setSendingFrames(false);
@@ -343,7 +343,7 @@ export function ScreenRecorder() {
                     className="input-field flex-1 max-w-sm text-sm rounded-xl"
                   />
                   <span className="text-xs text-surface-500">
-                    One screenshot per second will be sent to Opus.
+                    One screenshot per 10 seconds will be sent to Opus.
                   </span>
                 </div>
               </div>

@@ -37,11 +37,11 @@ const steps = [
   },
   {
     title: "Extract & Share Screenshots",
-    subtitle: "One frame per second",
+    subtitle: "One frame per 10 seconds",
     description:
-      "Automatically extract one screenshot for every second of your recording. Preview them in a gallery, then send them to Opus with optional workflow and recording IDs.",
+      "Automatically extract one screenshot for every 10 seconds of your recording, then send them to Opus with optional workflow and recording IDs.",
     icon: Images,
-    features: ["1 frame per second", "View before sending", "Send to Opus"],
+    features: ["1 frame per 10 seconds", "Send to Opus"],
   },
   {
     title: "Review Workflows",

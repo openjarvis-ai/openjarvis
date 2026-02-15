@@ -1,12 +1,13 @@
 /**
- * Extracts one frame per second from a video Blob.
- * Returns an array of JPEG Blobs (frame at 0s, 1s, 2s, ...).
+ * Extracts one frame per interval from a video Blob.
+ * Returns an array of JPEG Blobs (frame at 0s, intervalSeconds, 2*intervalSeconds, ...).
  * For WebM from MediaRecorder, video.duration is often 0 until more data loads;
  * pass fallbackDurationSeconds (e.g. from the recorder timer) to fix extraction.
  */
 export function extractFramesOnePerSecond(
   videoBlob: Blob,
-  fallbackDurationSeconds?: number
+  fallbackDurationSeconds?: number,
+  intervalSeconds = 10
 ): Promise<Blob[]> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(videoBlob);
@@ -45,7 +46,7 @@ export function extractFramesOnePerSecond(
         canvas.toBlob(
           (blob) => {
             if (blob) frames.push(blob);
-            currentSec += 1;
+            currentSec += intervalSeconds;
             if (currentSec <= durationSec) {
               video.currentTime = currentSec;
             } else {
