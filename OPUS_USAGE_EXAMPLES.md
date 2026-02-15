@@ -1,11 +1,46 @@
 # Opus Integration Usage Examples
 
-This document provides examples of how to send different types of data to the Opus API via the `/api/send-to-opus` endpoint.
+This document provides examples of how to send different types of data to the Opus API via the `/api/send-to-opus` and `/api/send-screenshots-to-opus` endpoints.
 
 ## Prerequisites
 
 1. Set your `OPUS_SERVICE_KEY` in `.env.local`
-2. Ensure you have a valid Opus `workflowId`
+2. Ensure you have a valid Opus `workflowId` (e.g., `m610yMivI2rx2Sdy`)
+
+## Sending Screenshots
+
+Use the `/api/send-screenshots-to-opus` endpoint to upload multiple screenshot files directly to Opus. Files are uploaded using the Opus file upload API and passed as `array_files` type.
+
+```typescript
+const formData = new FormData();
+formData.append('workflowId', 'm610yMivI2rx2Sdy'); // Required
+formData.append('recordingId', 'rec_123'); // Optional
+
+// Add screenshot files
+screenshotFiles.forEach((file, index) => {
+  formData.append(`screenshot_${index}`, file);
+});
+
+const response = await fetch('/api/send-screenshots-to-opus', {
+  method: 'POST',
+  body: formData,
+});
+
+const data = await response.json();
+console.log(data);
+// {
+//   "success": true,
+//   "message": "Screenshots sent to Opus successfully.",
+//   "batchId": "screens_xyz123",
+//   "count": 5,
+//   "workflowId": "m610yMivI2rx2Sdy",
+//   "recordingId": "rec_123",
+//   "timestamp": "2026-02-15T10:30:00Z",
+//   "opusJobId": "job_exec_abc123"
+// }
+```
+
+## Sending Comments and Structured Data
 
 ## Example 1: Review Feedback Record
 
@@ -18,7 +53,7 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'wf_001',
+    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       date: '2025-01-15',
       reviewer_id: 'rev_12345',
@@ -50,7 +85,7 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'wf_002',
+    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       timestamp: '2025-07-23T15:30',
       session_id: 'abc123-session',
@@ -75,7 +110,7 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'wf_003',
+    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       screen_captures: [
         { image_file: 'screen_capture_001.png' },
@@ -99,7 +134,7 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'wf_001',
+    workflowId: 'm610yMivI2rx2Sdy',
     comment: 'The workflow missed the step where I opened the dashboard.'
   })
 });
@@ -125,7 +160,7 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'wf_004',
+    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       // Review Feedback
       date: '2025-01-15',
@@ -158,7 +193,7 @@ try {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      workflowId: 'wf_001',
+      workflowId: 'm610yMivI2rx2Sdy',
       comment: 'My feedback'
     })
   });
@@ -181,6 +216,7 @@ try {
 ## Common Error Messages
 
 - `"workflowId is required and must be a string."` - Missing or invalid workflowId
+- `"Workflow {workflowId} is not accessible in workspace"` - Invalid workflowId or no access (403 error)
 - `"comment is required and must be a non-empty string."` - Missing or empty comment
 - `"comment must be 2000 characters or fewer."` - Comment too long
 - `"Opus service is not properly configured."` - Missing OPUS_SERVICE_KEY in environment
@@ -195,7 +231,7 @@ try {
 curl -X POST http://localhost:3000/api/send-to-opus \
   -H "Content-Type: application/json" \
   -d '{
-    "workflowId": "wf_001",
+    "workflowId": "m610yMivI2rx2Sdy",
     "comment": "{\"date\":\"2025-01-15\",\"reviewer_id\":\"rev_12345\",\"feedback_text\":\"Great work!\"}"
   }'
 
@@ -203,9 +239,17 @@ curl -X POST http://localhost:3000/api/send-to-opus \
 curl -X POST http://localhost:3000/api/send-to-opus \
   -H "Content-Type: application/json" \
   -d '{
-    "workflowId": "wf_001",
+    "workflowId": "m610yMivI2rx2Sdy",
     "comment": "The workflow is missing a step."
   }'
+
+# Upload Screenshots
+curl -X POST http://localhost:3000/api/send-screenshots-to-opus \
+  -F "workflowId=m610yMivI2rx2Sdy" \
+  -F "recordingId=rec_123" \
+  -F "screenshot_0=@/path/to/screenshot1.png" \
+  -F "screenshot_1=@/path/to/screenshot2.png"
+```
 ```
 
 ## Monitoring Job Execution
