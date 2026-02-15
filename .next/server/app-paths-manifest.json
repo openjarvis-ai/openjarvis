@@ -1,0 +1,8 @@
+{
+  "/page": "app/page.js",
+  "/recorder/page": "app/recorder/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/api/workflows/route": "app/api/workflows/route.js",
+  "/workflows/page": "app/workflows/page.js"
+}
