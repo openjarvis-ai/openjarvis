@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ToastProvider } from "@/components/ui/Toast";
+import { OnboardingOverlay } from "@/components/onboarding/OnboardingOverlay";
 
 export const metadata: Metadata = {
-  title: "OpenClaw Studio",
+  title: "OpenJarvis",
   description:
-    "Screen recording and workflow review platform powered by OpenClaw and Opus.",
+    "Screen recording and workflow review platform powered by OpenJarvis and Opus.",
 };
 
 export default function RootLayout({
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen">
         <ToastProvider>
+          <OnboardingOverlay />
           <div className="flex min-h-screen">
             <Sidebar />
             <main className="flex-1 min-w-0">

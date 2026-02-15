@@ -63,7 +63,7 @@ export const mockWorkflows: Workflow[] = [
     id: "wf_002",
     title: "Data Export Pipeline",
     description:
-      "OpenClaw-generated workflow for exporting user analytics data to CSV and PDF formats with scheduled delivery.",
+      "OpenJarvis-generated workflow for exporting user analytics data to CSV and PDF formats with scheduled delivery.",
     steps: [
       {
         id: "s1",
@@ -107,7 +107,7 @@ export const mockWorkflows: Workflow[] = [
       },
     ],
     metadata: {
-      source: "OpenClaw",
+      source: "OpenJarvis",
       version: "1.8.2",
       executionTime: 8750,
       model: "claw-v3",
@@ -178,7 +178,7 @@ export const mockWorkflows: Workflow[] = [
     id: "wf_004",
     title: "Invoice Generation & Delivery",
     description:
-      "End-to-end invoice creation workflow from OpenClaw, covering line item assembly through client delivery via email.",
+      "End-to-end invoice creation workflow from OpenJarvis, covering line item assembly through client delivery via email.",
     steps: [
       {
         id: "s1",
@@ -214,7 +214,7 @@ export const mockWorkflows: Workflow[] = [
       },
     ],
     metadata: {
-      source: "OpenClaw",
+      source: "OpenJarvis",
       version: "2.0.1",
       executionTime: 5200,
       model: "claw-v3",

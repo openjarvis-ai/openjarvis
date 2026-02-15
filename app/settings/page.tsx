@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Settings, User, Bell, Shield, Palette } from "lucide-react";
+import { Settings, User, Bell, Shield, Palette, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const sections = [
@@ -38,6 +38,24 @@ export default function SettingsPage() {
         title="Settings"
         description="Manage your account and preferences"
       />
+
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              localStorage.removeItem("openjarvis-onboarding-dismissed");
+              window.location.reload();
+            } catch {
+              window.location.reload();
+            }
+          }}
+          className="btn-secondary"
+        >
+          <BookOpen className="w-4 h-4" />
+          View onboarding again
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {sections.map((section) => (
