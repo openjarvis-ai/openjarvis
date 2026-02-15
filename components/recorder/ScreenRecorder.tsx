@@ -163,69 +163,69 @@ export function ScreenRecorder() {
     <div className="space-y-6">
       {/* Source Selector — only when idle */}
       {isIdle && (
-        <div className="card-elevated p-6 animate-fade-in">
-          <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-4">
-            Choose what to record
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {sourceOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setSelectedSource(opt.value)}
-                className={cn(
-                  "flex flex-col items-start gap-3 p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                  selectedSource === opt.value
-                    ? "border-brand-500 bg-brand-50/50 dark:bg-brand-900/10"
-                    : "border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600"
-                )}
-              >
-                <div
+        <div className="relative overflow-hidden rounded-2xl border border-surface-200/80 dark:border-surface-700/80 bg-white dark:bg-surface-900 shadow-soft animate-fade-in">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-500/[0.02] via-transparent to-transparent pointer-events-none" />
+          <div className="relative p-8">
+            <h3 className="text-base font-semibold text-surface-900 dark:text-surface-100 mb-1">
+              Choose what to record
+            </h3>
+            <p className="text-sm text-surface-500 mb-6">
+              Select your capture source to begin
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              {sourceOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSelectedSource(opt.value)}
                   className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center",
+                    "group flex flex-col items-start gap-4 p-5 rounded-2xl border-2 transition-all duration-300 text-left",
+                    "hover:scale-[1.02] active:scale-[0.99]",
                     selectedSource === opt.value
-                      ? "bg-brand-100 dark:bg-brand-900/30"
-                      : "bg-surface-100 dark:bg-surface-800"
+                      ? "border-brand-500 bg-brand-50/80 dark:bg-brand-900/20 shadow-sm ring-2 ring-brand-500/20"
+                      : "border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/30 hover:border-brand-300 dark:hover:border-brand-700/50 hover:bg-surface-50 dark:hover:bg-surface-800/50"
                   )}
                 >
-                  <opt.icon
+                  <div
                     className={cn(
-                      "w-5 h-5",
+                      "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
                       selectedSource === opt.value
-                        ? "text-brand-600 dark:text-brand-400"
-                        : "text-surface-500"
+                        ? "bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400"
+                        : "bg-white dark:bg-surface-700/80 text-surface-500 group-hover:text-brand-500 dark:group-hover:text-brand-400 shadow-sm"
                     )}
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-surface-800 dark:text-surface-200">
-                    {opt.label}
-                  </p>
-                  <p className="text-xs text-surface-400 mt-0.5">{opt.desc}</p>
-                </div>
-              </button>
-            ))}
-          </div>
+                  >
+                    <opt.icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-surface-900 dark:text-surface-100">
+                      {opt.label}
+                    </p>
+                    <p className="text-xs text-surface-500 mt-0.5">{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
 
-          {/* Start button */}
-          <button
-            onClick={() => startRecording(selectedSource)}
-            className="btn-primary mt-6 w-full sm:w-auto"
-          >
-            <Play className="w-4 h-4" />
-            Start Recording
-          </button>
+            {/* Start button */}
+            <button
+              onClick={() => startRecording(selectedSource)}
+              className="w-full sm:w-auto btn-primary px-8 py-3.5 text-base font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Play className="w-5 h-5 fill-current" />
+              Start Recording
+            </button>
+          </div>
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 animate-slide-up">
+        <div className="flex items-start gap-4 p-5 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/60 animate-slide-up">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-red-800 dark:text-red-300">{error}</p>
             <button
               onClick={resetRecording}
-              className="mt-2 text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
+              className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:underline"
             >
               Try again
             </button>
@@ -235,26 +235,25 @@ export function ScreenRecorder() {
 
       {/* Recording Controls */}
       {(isRecording || isPaused) && (
-        <div className="card-elevated p-8 animate-slide-up">
-          {/* Status indicator */}
-          <div className="flex flex-col items-center gap-6">
-            {/* Recording dot + timer */}
-            <div className="flex items-center gap-3">
+        <div className="rounded-2xl border border-surface-200/80 dark:border-surface-700/80 bg-white dark:bg-surface-900 shadow-medium p-10 animate-slide-up">
+          <div className="flex flex-col items-center gap-8">
+            {/* Status indicator */}
+            <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-surface-100 dark:bg-surface-800/80">
               <div
                 className={cn(
-                  "w-3 h-3 rounded-full",
+                  "w-2.5 h-2.5 rounded-full flex-shrink-0",
                   isRecording
                     ? "bg-red-500 recording-indicator"
                     : "bg-amber-500"
                 )}
               />
-              <span className="text-sm font-medium text-surface-500">
+              <span className="text-sm font-medium text-surface-600 dark:text-surface-400">
                 {isRecording ? "Recording" : "Paused"}
               </span>
             </div>
 
             {/* Timer */}
-            <div className="font-mono text-5xl font-medium tracking-tight text-surface-900 dark:text-surface-100 tabular-nums">
+            <div className="font-mono text-6xl font-medium tracking-tight text-surface-900 dark:text-surface-100 tabular-nums">
               {formatDuration(duration)}
             </div>
 
@@ -263,7 +262,7 @@ export function ScreenRecorder() {
               {isRecording ? (
                 <button
                   onClick={pauseRecording}
-                  className="btn-secondary"
+                  className="btn-secondary px-6 py-3 rounded-xl font-medium"
                 >
                   <Pause className="w-4 h-4" />
                   Pause
@@ -271,21 +270,24 @@ export function ScreenRecorder() {
               ) : (
                 <button
                   onClick={resumeRecording}
-                  className="btn-primary"
+                  className="btn-primary px-6 py-3 rounded-xl font-medium"
                 >
-                  <Play className="w-4 h-4" />
+                  <Play className="w-4 h-4 fill-current" />
                   Resume
                 </button>
               )}
-              <button onClick={stopRecording} className="btn-danger">
-                <Square className="w-4 h-4" />
+              <button
+                onClick={stopRecording}
+                className="btn-danger px-6 py-3 rounded-xl font-medium"
+              >
+                <Square className="w-4 h-4 fill-current" />
                 Stop
               </button>
             </div>
 
             {/* Source badge */}
-            <div className="badge-brand flex items-center gap-1.5">
-              <CircleDot className="w-3 h-3" />
+            <div className="badge-brand flex items-center gap-2 px-3 py-1.5 text-sm">
+              <CircleDot className="w-3.5 h-3.5" />
               Capturing: {selectedSource}
             </div>
           </div>
@@ -294,38 +296,46 @@ export function ScreenRecorder() {
 
       {/* Requesting permission state */}
       {status === "requesting" && (
-        <div className="card-elevated p-12 flex flex-col items-center gap-4 animate-fade-in">
-          <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center">
-            <Monitor className="w-6 h-6 text-brand-600 animate-pulse" />
+        <div className="rounded-2xl border border-surface-200/80 dark:border-surface-700/80 bg-white dark:bg-surface-900 shadow-soft p-16 flex flex-col items-center gap-6 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center animate-pulse">
+            <Monitor className="w-8 h-8 text-brand-600 dark:text-brand-400" />
           </div>
-          <p className="text-sm text-surface-500 font-medium">
-            Waiting for screen sharing permission…
-          </p>
+          <div className="text-center">
+            <p className="text-sm font-medium text-surface-700 dark:text-surface-300">
+              Waiting for screen sharing permission…
+            </p>
+            <p className="text-xs text-surface-500 mt-1">
+              Please select a screen, window, or tab in the browser prompt
+            </p>
+          </div>
         </div>
       )}
 
       {/* Preview */}
       {isStopped && previewUrl && (
-        <div className="card-elevated overflow-hidden animate-slide-up">
-          <div className="aspect-video bg-black">
+        <div className="rounded-2xl border border-surface-200/80 dark:border-surface-700/80 bg-white dark:bg-surface-900 shadow-soft overflow-hidden animate-slide-up">
+          <div className="aspect-video bg-surface-900">
             <video
               src={previewUrl}
               controls
-              className="w-full h-full"
+              className="w-full h-full object-contain"
               playsInline
             />
           </div>
-          <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-surface-800 dark:text-surface-200">
-                Recording Preview
-              </p>
-              <p className="text-xs text-surface-400 mt-1">
-                Duration: {formatDuration(duration)}
-                {recordedBlob && ` · Size: ${formatFileSize(recordedBlob.size)}`}
-              </p>
+          <div className="p-6 flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-base font-semibold text-surface-900 dark:text-surface-100">
+                  Recording Preview
+                </p>
+                <p className="text-sm text-surface-500 mt-0.5">
+                  Duration: {formatDuration(duration)}
+                  {recordedBlob && ` · Size: ${formatFileSize(recordedBlob.size)}`}
+                </p>
+              </div>
             </div>
             <div className="flex flex-col gap-4">
+              <p className="text-xs font-medium text-surface-500 uppercase tracking-wider">Actions</p>
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => {
@@ -333,7 +343,7 @@ export function ScreenRecorder() {
                     clearScreenshots();
                     resetRecording();
                   }}
-                  className="btn-ghost"
+                  className="btn-ghost px-4 py-2.5 rounded-xl"
                 >
                   <RotateCcw className="w-4 h-4" />
                   New Recording
@@ -341,7 +351,7 @@ export function ScreenRecorder() {
                 <button
                   onClick={handleViewScreenshots}
                   disabled={extractingToView}
-                  className="btn-secondary"
+                  className="btn-secondary px-4 py-2.5 rounded-xl"
                 >
                   {extractingToView ? (
                     <ImageIcon className="w-4 h-4 animate-pulse" />
@@ -352,7 +362,7 @@ export function ScreenRecorder() {
                 </button>
                 <button
                   onClick={() => downloadRecording()}
-                  className="btn-secondary"
+                  className="btn-secondary px-4 py-2.5 rounded-xl"
                 >
                   <Download className="w-4 h-4" />
                   Download
@@ -360,7 +370,7 @@ export function ScreenRecorder() {
                 <button
                   onClick={handleUpload}
                   disabled={uploading}
-                  className="btn-secondary"
+                  className="btn-secondary px-4 py-2.5 rounded-xl"
                 >
                   <Upload className="w-4 h-4" />
                   {uploading ? "Uploading…" : "Upload"}
@@ -368,7 +378,7 @@ export function ScreenRecorder() {
                 <button
                   onClick={handleSendFramesToOpus}
                   disabled={sendingFrames}
-                  className="btn-primary"
+                  className="btn-primary px-4 py-2.5 rounded-xl"
                 >
                   {sendingFrames ? (
                     <ImageIcon className="w-4 h-4 animate-pulse" />
@@ -378,38 +388,42 @@ export function ScreenRecorder() {
                   {sendingFrames ? "Extracting & sending…" : "Send frames to Opus"}
                 </button>
               </div>
-              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center">
-                <label className="text-xs text-surface-500 font-medium">Workflow ID (optional)</label>
-                <input
-                  type="text"
-                  value={workflowIdForOpus}
-                  onChange={(e) => setWorkflowIdForOpus(e.target.value)}
-                  placeholder="e.g. wf_001"
-                  className="input-field flex-1 max-w-xs text-sm"
-                />
-                <span className="text-xs text-surface-400">
-                  One screenshot per second will be sent to Opus.
-                </span>
+              <div className="flex flex-col gap-2 pt-4 border-t border-surface-200 dark:border-surface-700">
+                <label className="text-xs font-medium text-surface-600 dark:text-surface-400">
+                  Opus Workflow ID (optional)
+                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <input
+                    type="text"
+                    value={workflowIdForOpus}
+                    onChange={(e) => setWorkflowIdForOpus(e.target.value)}
+                    placeholder="e.g. m610yMivl2rx2Sdy"
+                    className="input-field flex-1 max-w-sm text-sm rounded-xl"
+                  />
+                  <span className="text-xs text-surface-500">
+                    One screenshot per second will be sent to Opus.
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Screenshot gallery */}
           {screenshotUrls && screenshotUrls.length > 0 && (
-            <div className="p-5 pt-0 border-t border-surface-200 dark:border-surface-700">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-surface-700 dark:text-surface-300">
+            <div className="p-6 border-t border-surface-200 dark:border-surface-700">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-semibold text-surface-800 dark:text-surface-200">
                   Screenshots ({screenshotUrls.length} frames, 1 per second)
                 </h4>
                 <button
                   type="button"
                   onClick={clearScreenshots}
-                  className="text-xs text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+                  className="text-xs font-medium text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
                 >
                   Hide
                 </button>
               </div>
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-72 overflow-y-auto rounded-xl p-1">
                 {screenshotUrls.map((url, i) => (
                   <button
                     key={i}
