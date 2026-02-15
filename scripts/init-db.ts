@@ -1,18 +1,30 @@
 /**
  * Initialize Turso DB: create tables and seed with mock data.
- * Run: npx tsx scripts/init-db.ts
+ * Run: npm run db:init
  * Requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN (optional for file: DB)
  */
 import { createClient } from "@libsql/client";
 import { config } from "dotenv";
+import path from "path";
 
-config({ path: ".env.local" });
-config({ path: ".env" });
+// Load .env from project root (where package.json is), regardless of cwd
+const projectRoot = path.resolve(process.cwd());
+config({ path: path.join(projectRoot, ".env.local") });
+config({ path: path.join(projectRoot, ".env") });
 
-const url = process.env.TURSO_DATABASE_URL ?? "file:./data/local.db";
-const authToken = process.env.TURSO_AUTH_TOKEN ?? undefined;
+// Trim to avoid BOM/whitespace issues; empty string should fallback
+const envUrl = (process.env.TURSO_DATABASE_URL ?? "").trim();
+const url =
+  envUrl || `file:${path.join(projectRoot, "data", "local.db")}`;
+const authToken = (process.env.TURSO_AUTH_TOKEN ?? "").trim() || undefined;
 
-const client = createClient({ url, authToken: authToken || undefined });
+if (!url.startsWith("libsql://")) {
+  console.warn(
+    "⚠ TURSO_DATABASE_URL not set or invalid. Using local file DB. Set TURSO_DATABASE_URL in .env for Turso cloud."
+  );
+}
+
+const client = createClient({ url, authToken });
 
 const CREATE_WORKFLOWS = `
 CREATE TABLE IF NOT EXISTS workflows (
@@ -100,24 +112,38 @@ INSERT INTO recordings (id, name, duration, size, status, created_at) VALUES
   ('rec_003', 'Dashboard Bug Reproduction', 67, 12800000, 'ready', '2026-02-11T14:15:00Z');
 `;
 
+// Split by ";", trim, remove empty - but keep statements that have "--" comments inside them
+// (only filter statements that are ONLY a comment)
+const seedStatements = CLEAR_AND_SEED.split(";")
+  .map((s) => s.trim())
+  .filter((s) => s.length > 0 && s !== "--");
+
 const STATEMENTS = [
   CREATE_WORKFLOWS,
   CREATE_WORKFLOW_STEPS,
   CREATE_RECORDINGS,
   CREATE_COMMENTS,
-  ...CLEAR_AND_SEED.split(";")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith("--")),
+  ...seedStatements,
 ];
 
 async function main() {
   console.log("Initializing Turso DB...");
+  console.log("Using:", url.startsWith("libsql://") ? "Turso (cloud)" : url);
+
   for (const stmt of STATEMENTS) {
     const trimmed = stmt.trim();
     if (!trimmed) continue;
     await client.execute(trimmed);
   }
-  console.log("Done. Tables created and seeded.");
+
+  const { rows } = await client.execute("SELECT COUNT(*) as c FROM workflows");
+  const count = Number(rows[0]?.c ?? 0);
+  if (count === 0 && url.startsWith("libsql://")) {
+    console.warn("⚠ Verification failed: 0 workflows in DB. Data may not have been written to Turso.");
+    process.exit(1);
+  }
+
+  console.log(`Done. Tables created and seeded. (workflows: ${count})`);
 }
 
 main().catch((e) => {

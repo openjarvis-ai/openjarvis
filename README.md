@@ -141,7 +141,13 @@ The app uses **Turso** (libSQL) with **Drizzle ORM**. For local development with
    TURSO_DATABASE_URL=libsql://your-database.turso.io
    TURSO_AUTH_TOKEN=your-auth-token
    ```
-3. Run `npm run db:init` to create tables and seed
+3. Create tables and seed:
+   - `npm run db:init` (uses .env)
+   - If data doesn't appear in Turso, run manually:
+     ```bash
+     npm run db:schema-turso   # creates tables
+     npm run db:seed-turso     # seeds data
+     ```
 
 ### Build for Production
 
