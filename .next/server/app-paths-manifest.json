@@ -1,8 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/workflows/page": "app/workflows/page.js",
-  "/recorder/page": "app/recorder/page.js",
-  "/api/workflows/route": "app/api/workflows/route.js",
-  "/api/dashboard/route": "app/api/dashboard/route.js"
-}
