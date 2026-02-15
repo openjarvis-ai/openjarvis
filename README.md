@@ -1,6 +1,6 @@
 # OpenJarvis
 
-A modern, production-ready web application for **screen recording** and **workflow review** built with Next.js 14, TypeScript, and Tailwind CSS.
+OpenJarvis is a tool that helps you automate day-to-day tasks. It uses screen recording to identify repetitive workflows, then turns them into automated processes. By reducing time on routine, manual work, OpenJarvis lets you focus on higher-value, creative tasks instead.
 
 ---
 

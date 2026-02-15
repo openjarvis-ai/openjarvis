@@ -147,6 +147,24 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Description */}
+      <section className="py-28 px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="max-w-3xl mx-auto text-center"
+        >
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-normal tracking-tight text-surface-900 dark:text-surface-100 leading-tight">
+            Automate your entire workflow with a single click — no setup, no scripts.
+          </h2>
+          <p className="mt-8 text-lg text-surface-600 dark:text-surface-400 leading-relaxed">
+            OpenJarvis is a tool that helps you automate your day-to-day tasks. It detects repetitive workflows through screen recording and turns them into automated processes. Save time on routine, manual work—and focus on what matters most.
+          </p>
+        </motion.div>
+      </section>
+
       {/* Features */}
       <section className="py-28 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
