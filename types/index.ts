@@ -48,7 +48,7 @@ export interface Workflow {
 
 // ─── Comment Types ───────────────────────────────────────────
 export interface SendCommentPayload {
-  workflowId: string;
+  workflowId?: string; // Optional - uses hardcoded workflow ID if not provided
   comment: string;
   recordingId?: string;
 }

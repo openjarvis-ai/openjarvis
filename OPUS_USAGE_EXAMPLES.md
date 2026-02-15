@@ -5,7 +5,9 @@ This document provides examples of how to send different types of data to the Op
 ## Prerequisites
 
 1. Set your `OPUS_SERVICE_KEY` in `.env.local`
-2. Ensure you have a valid Opus `workflowId` (e.g., `m610yMivI2rx2Sdy`)
+2. The workflow ID is hardcoded to `m610yMivI2rx2Sdy` in the API routes
+
+**Note:** Both API endpoints now use a hardcoded workflow ID (`m610yMivI2rx2Sdy`). Any `workflowId` parameter passed in requests will be ignored.
 
 ## Sending Screenshots
 
@@ -13,7 +15,7 @@ Use the `/api/send-screenshots-to-opus` endpoint to upload multiple screenshot f
 
 ```typescript
 const formData = new FormData();
-formData.append('workflowId', 'm610yMivI2rx2Sdy'); // Required
+// workflowId is hardcoded in the API, no need to pass it
 formData.append('recordingId', 'rec_123'); // Optional
 
 // Add screenshot files
@@ -53,7 +55,6 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       date: '2025-01-15',
       reviewer_id: 'rev_12345',
@@ -85,7 +86,6 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       timestamp: '2025-07-23T15:30',
       session_id: 'abc123-session',
@@ -110,7 +110,6 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       screen_captures: [
         { image_file: 'screen_capture_001.png' },
@@ -134,7 +133,6 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'm610yMivI2rx2Sdy',
     comment: 'The workflow missed the step where I opened the dashboard.'
   })
 });
@@ -160,7 +158,6 @@ const response = await fetch('/api/send-to-opus', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    workflowId: 'm610yMivI2rx2Sdy',
     comment: JSON.stringify({
       // Review Feedback
       date: '2025-01-15',
@@ -193,7 +190,6 @@ try {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      workflowId: 'm610yMivI2rx2Sdy',
       comment: 'My feedback'
     })
   });

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { comments } from "@/lib/db/schema";
 
 const OPUS_BASE_URL = "https://operator.opus.com";
+const OPUS_WORKFLOW_ID = "m610yMivI2rx2Sdy";
 
 interface OpusInitiateResponse {
   jobExecutionId: string;
@@ -103,12 +104,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json() as SendCommentPayload;
 
-    if (!body.workflowId || typeof body.workflowId !== "string") {
-      return NextResponse.json(
-        { success: false, message: "workflowId is required and must be a string." },
-        { status: 400 }
-      );
-    }
+    console.log("[send-to-opus] Using hardcoded workflowId:", OPUS_WORKFLOW_ID);
 
     if (!body.comment || typeof body.comment !== "string" || body.comment.trim().length === 0) {
       return NextResponse.json(
@@ -165,7 +161,7 @@ export async function POST(request: NextRequest) {
         "x-service-key": serviceKey,
       },
       body: JSON.stringify({
-        workflowId: body.workflowId,
+        workflowId: OPUS_WORKFLOW_ID,
         title: `OpenJarvis Feedback - ${body.recordingId || "Manual Entry"}`,
         description: `Feedback submission from OpenJarvis at ${new Date().toISOString()}`,
       }),
@@ -224,13 +220,13 @@ export async function POST(request: NextRequest) {
     console.error("Send to Opus failed:", err);
 
     // Fallback: save to local DB if we have valid payload
-    if (body?.workflowId && body?.comment) {
+    if (body?.comment) {
       try {
         const commentId = `cmt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
         const now = new Date().toISOString();
         await db.insert(comments).values({
           id: commentId,
-          workflowId: body.workflowId,
+          workflowId: OPUS_WORKFLOW_ID,
           comment: body.comment.trim(),
           recordingId: body.recordingId ?? null,
           createdAt: now,
