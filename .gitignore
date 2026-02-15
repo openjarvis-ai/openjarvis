@@ -1,3 +1,13 @@
 node_modules
 .env
 package-lock.json
+
+# Next.js build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
