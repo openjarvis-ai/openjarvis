@@ -4,31 +4,21 @@ const MAX_SCREENSHOTS = 600; // e.g. 10 min at 1/sec
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB per image
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const OPUS_BASE_URL = "https://operator.opus.com";
+const OPUS_WORKFLOW_ID = "m610yMivI2rx2Sdy";
 
 export async function POST(request: NextRequest) {
   console.log("[send-screenshots-to-opus] POST request received");
   try {
     const formData = await request.formData();
-    const workflowId = formData.get("workflowId");
     const recordingId = formData.get("recordingId");
-    console.log("[send-screenshots-to-opus] workflowId:", workflowId, "recordingId:", recordingId);
+    console.log("[send-screenshots-to-opus] Using hardcoded workflowId:", OPUS_WORKFLOW_ID, "recordingId:", recordingId);
 
-    const workflowIdStr =
-      workflowId != null && typeof workflowId === "string" ? workflowId.trim() : undefined;
     const recordingIdStr =
       recordingId != null && typeof recordingId === "string" ? recordingId.trim() : undefined;
 
-    if (!workflowIdStr) {
-      console.log("[send-screenshots-to-opus] Error: workflowId is required");
-      return NextResponse.json(
-        { success: false, message: "workflowId is required." },
-        { status: 400 }
-      );
-    }
-
     const files: File[] = [];
     for (const [key] of formData.entries()) {
-      if (key === "workflowId" || key === "recordingId") continue;
+      if (key === "recordingId") continue;
       const value = formData.get(key);
       if (value instanceof File && value.size > 0) {
         console.log(`[send-screenshots-to-opus] Processing file: ${value.name}, type: ${value.type}, size: ${value.size} bytes`);
@@ -157,7 +147,7 @@ export async function POST(request: NextRequest) {
         "x-service-key": serviceKey,
       },
       body: JSON.stringify({
-        workflowId: workflowIdStr,
+        workflowId: OPUS_WORKFLOW_ID,
         title: `OpenJarvis Screenshots - ${recordingIdStr || "Batch Upload"}`,
         description: `Screenshot batch uploaded from OpenJarvis at ${new Date().toISOString()}`,
       }),
@@ -222,7 +212,7 @@ export async function POST(request: NextRequest) {
       message: "Screenshots sent to Opus successfully.",
       batchId,
       count: files.length,
-      workflowId: workflowIdStr,
+      workflowId: OPUS_WORKFLOW_ID,
       recordingId: recordingIdStr,
       timestamp: new Date().toISOString(),
       opusJobId: executeData.jobExecutionId,
