@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MAX_SCREENSHOTS = 600; // e.g. 10 min at 1/sec
+const MAX_SCREENSHOTS = 600;
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB per image
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const OPUS_BASE_URL = "https://operator.opus.com";
+<<<<<<< HEAD
 const OPUS_WORKFLOW_ID = "m610yMivI2rx2Sdy";
+=======
+
+interface OpusInitiateResponse {
+  jobExecutionId: string;
+}
+
+interface OpusExecuteResponse {
+  success: boolean;
+  message: string;
+  jobExecutionId: string;
+}
+>>>>>>> 6052215 (feat: openclaw connection)
 
 export async function POST(request: NextRequest) {
   console.log("[send-screenshots-to-opus] POST request received");
@@ -13,10 +26,23 @@ export async function POST(request: NextRequest) {
     const recordingId = formData.get("recordingId");
     console.log("[send-screenshots-to-opus] Using hardcoded workflowId:", OPUS_WORKFLOW_ID, "recordingId:", recordingId);
 
+<<<<<<< HEAD
+=======
+    // workflowId is optional - for internal tracking only
+    const workflowIdStr =
+      workflowId && typeof workflowId === "string" && workflowId.trim()
+        ? workflowId.trim()
+        : undefined;
+>>>>>>> 6052215 (feat: openclaw connection)
     const recordingIdStr =
-      recordingId != null && typeof recordingId === "string" ? recordingId.trim() : undefined;
+      recordingId != null && typeof recordingId === "string"
+        ? recordingId.trim()
+        : undefined;
 
+    // Collect screenshot files
     const files: File[] = [];
+    const fileUrls: string[] = [];
+
     for (const [key] of formData.entries()) {
       if (key === "recordingId") continue;
       const value = formData.get(key);
@@ -25,7 +51,10 @@ export async function POST(request: NextRequest) {
         if (!ALLOWED_TYPES.has(value.type)) {
           console.log(`[send-screenshots-to-opus] Rejecting invalid file type: ${value.type}`);
           return NextResponse.json(
-            { success: false, message: `Invalid file type: ${value.type}. Allowed: image/jpeg, image/png, image/webp.` },
+            {
+              success: false,
+              message: `Invalid file type: ${value.type}. Allowed: image/jpeg, image/png, image/webp.`,
+            },
             { status: 400 }
           );
         }
@@ -37,6 +66,12 @@ export async function POST(request: NextRequest) {
           );
         }
         files.push(value);
+
+        // Convert to base64 data URL for Opus
+        const arrayBuffer = await value.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString("base64");
+        const dataUrl = `data:${value.type};base64,${base64}`;
+        fileUrls.push(dataUrl);
       }
     }
     console.log(`[send-screenshots-to-opus] Total files collected: ${files.length}`);
@@ -52,11 +87,15 @@ export async function POST(request: NextRequest) {
     if (files.length > MAX_SCREENSHOTS) {
       console.log(`[send-screenshots-to-opus] Error: Too many screenshots (${files.length} > ${MAX_SCREENSHOTS})`);
       return NextResponse.json(
-        { success: false, message: `Too many screenshots (max ${MAX_SCREENSHOTS}).` },
+        {
+          success: false,
+          message: `Too many screenshots (max ${MAX_SCREENSHOTS}).`,
+        },
         { status: 400 }
       );
     }
 
+<<<<<<< HEAD
     // Get service key from environment
     const serviceKey = process.env.OPUS_SERVICE_KEY;
     if (!serviceKey) {
@@ -206,21 +245,117 @@ export async function POST(request: NextRequest) {
 
     const batchId = `screens_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
     console.log(`[send-screenshots-to-opus] Success! batchId: ${batchId}, count: ${files.length}`);
+=======
+    const serviceKey = process.env.OPUS_SERVICE_KEY;
+    if (!serviceKey) {
+      return NextResponse.json(
+        { success: false, message: "Opus service is not configured." },
+        { status: 500 }
+      );
+    }
+
+    // Opus workflow ID from env (the Opus platform workflow, not internal workflowId)
+    const opusWorkflowId = process.env.OPUS_WORKFLOW_ID;
+    if (!opusWorkflowId) {
+      return NextResponse.json(
+        { success: false, message: "OPUS_WORKFLOW_ID not configured." },
+        { status: 500 }
+      );
+    }
+
+    // Step 1: Initiate Opus job
+    const initiateResponse = await fetch(`${OPUS_BASE_URL}/job/initiate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-service-key": serviceKey,
+      },
+      body: JSON.stringify({
+        workflowId: opusWorkflowId,
+        title: `OpenJarvis Screenshots - ${recordingIdStr || "Batch"}`,
+        description: `Screenshot analysis from OpenJarvis at ${new Date().toISOString()}`,
+      }),
+    });
+
+    if (!initiateResponse.ok) {
+      const errorText = await initiateResponse.text();
+      console.error("Opus initiate failed:", initiateResponse.status, errorText);
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Failed to initiate Opus job: ${errorText}`,
+        },
+        { status: 502 }
+      );
+    }
+
+    const initiateData: OpusInitiateResponse = await initiateResponse.json();
+    const { jobExecutionId } = initiateData;
+
+    // Step 2: Execute job with screenshots
+    // Build payload schema instance with screenshot array
+    const jobPayloadSchemaInstance = {
+      screenshots: {
+        value: fileUrls,
+        type: "array_files",
+        displayName: "Screenshot Images",
+      },
+    };
+
+    const executeResponse = await fetch(`${OPUS_BASE_URL}/job/execute`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-service-key": serviceKey,
+      },
+      body: JSON.stringify({
+        jobExecutionId,
+        jobPayloadSchemaInstance,
+      }),
+    });
+
+    if (!executeResponse.ok) {
+      const errorText = await executeResponse.text();
+      console.error("Opus execute failed:", executeResponse.status, errorText);
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Failed to execute Opus job: ${executeResponse.status} ${executeResponse.statusText}`,
+        },
+        { status: 502 }
+      );
+    }
+
+    const executeData: OpusExecuteResponse = await executeResponse.json();
+>>>>>>> 6052215 (feat: openclaw connection)
 
     return NextResponse.json({
       success: true,
       message: "Screenshots sent to Opus successfully.",
+<<<<<<< HEAD
       batchId,
       count: files.length,
       workflowId: OPUS_WORKFLOW_ID,
+=======
+      jobExecutionId: executeData.jobExecutionId,
+      workflowId: workflowIdStr,
+>>>>>>> 6052215 (feat: openclaw connection)
       recordingId: recordingIdStr,
+      screenshotCount: files.length,
       timestamp: new Date().toISOString(),
       opusJobId: executeData.jobExecutionId,
     });
   } catch (error) {
+<<<<<<< HEAD
     console.error("[send-screenshots-to-opus] Error processing request:", error);
+=======
+    console.error("Error in send-screenshots-to-opus:", error);
+>>>>>>> 6052215 (feat: openclaw connection)
     return NextResponse.json(
-      { success: false, message: "Invalid request." },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : "Invalid request.",
+      },
       { status: 400 }
     );
   }

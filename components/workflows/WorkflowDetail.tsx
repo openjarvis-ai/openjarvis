@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Workflow } from "@/types";
 import { useToast } from "@/components/ui/Toast";
+import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
@@ -14,6 +15,14 @@ import {
   Cpu,
   FileText,
   Loader2,
+  Plug,
+  PlugZap,
+  Shield,
+  ShieldX,
+  ArrowUpCircle,
+  MessageSquare,
+  Wrench,
+  Sparkles,
 } from "lucide-react";
 
 interface WorkflowDetailProps {
@@ -32,10 +41,29 @@ const stepStatusLabel = {
   failed: "Failed",
 };
 
+const statusColors: Record<string, string> = {
+  connected: "bg-emerald-500",
+  connecting: "bg-amber-500 animate-pulse",
+  disconnected: "bg-surface-400",
+  error: "bg-red-500",
+};
+
 export function WorkflowDetail({ workflow }: WorkflowDetailProps) {
   const { toast } = useToast();
   const [comment, setComment] = useState("");
   const [sending, setSending] = useState(false);
+  const [rejectFeedback, setRejectFeedback] = useState<Record<string, string>>({});
+
+  const {
+    connectionStatus,
+    connect,
+    disconnect,
+    assets,
+    activityFeed,
+    approveAsset,
+    rejectAsset,
+    loading: openClawLoading,
+  } = useOpenClaw(workflow.id);
 
   const handleSendComment = async () => {
     if (!comment.trim()) {
@@ -65,6 +93,30 @@ export function WorkflowDetail({ workflow }: WorkflowDetailProps) {
       toast("Network error. Please try again.", "error");
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleApprove = async (assetId: string) => {
+    try {
+      await approveAsset(assetId);
+      toast("Asset pushed to OpenClaw!", "success");
+    } catch {
+      toast("Failed to push asset.", "error");
+    }
+  };
+
+  const handleReject = async (assetId: string) => {
+    const feedback = rejectFeedback[assetId];
+    if (!feedback?.trim()) {
+      toast("Please provide feedback for reconfiguration.", "error");
+      return;
+    }
+    try {
+      await rejectAsset(assetId, feedback.trim());
+      toast("Asset rejected. Reconfiguration request sent.", "info");
+      setRejectFeedback((prev) => ({ ...prev, [assetId]: "" }));
+    } catch {
+      toast("Failed to reject asset.", "error");
     }
   };
 
@@ -212,6 +264,175 @@ export function WorkflowDetail({ workflow }: WorkflowDetailProps) {
         </div>
         </div>
       </div>
+
+      {/* OpenClaw Connection Status */}
+      <div className="card-elevated p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "w-2.5 h-2.5 rounded-full",
+                statusColors[connectionStatus]
+              )}
+            />
+            <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300">
+              OpenClaw Connection
+            </h3>
+            <span className="text-xs text-surface-400 capitalize">
+              {connectionStatus}
+            </span>
+          </div>
+          <button
+            onClick={connectionStatus === "connected" ? disconnect : connect}
+            className={cn(
+              "flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors",
+              connectionStatus === "connected"
+                ? "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+                : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+            )}
+          >
+            {connectionStatus === "connected" ? (
+              <>
+                <PlugZap className="w-3.5 h-3.5" />
+                Disconnect
+              </>
+            ) : connectionStatus === "connecting" ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Connecting…
+              </>
+            ) : (
+              <>
+                <Plug className="w-3.5 h-3.5" />
+                Connect
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Generated Assets Panel */}
+      {assets.length > 0 && (
+        <div className="card-elevated p-6">
+          <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-4 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            Generated Assets
+          </h3>
+          <div className="space-y-4">
+            {assets.map((asset) => (
+              <div
+                key={asset.id}
+                className="border border-surface-200 dark:border-surface-700 rounded-xl p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      {asset.type === "tool" ? (
+                        <Wrench className="w-4 h-4 text-blue-500" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 text-purple-500" />
+                      )}
+                      <span className="text-sm font-semibold text-surface-800 dark:text-surface-200">
+                        {asset.name}
+                      </span>
+                      <span
+                        className={cn(
+                          "badge text-[10px]",
+                          asset.type === "tool"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                            : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                        )}
+                      >
+                        {asset.type}
+                      </span>
+                      <span
+                        className={cn(
+                          "badge text-[10px]",
+                          asset.status === "pending" &&
+                            "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+                          asset.status === "approved" && "badge-success",
+                          asset.status === "pushed" && "badge-success",
+                          asset.status === "rejected" && "badge-error"
+                        )}
+                      >
+                        {asset.status}
+                      </span>
+                    </div>
+                    {/* Definition preview */}
+                    <pre className="mt-2 text-xs text-surface-400 bg-surface-50 dark:bg-surface-900 rounded-lg p-3 overflow-x-auto max-h-32">
+                      {JSON.stringify(asset.definition, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                {asset.status === "pending" && (
+                  <div className="mt-3 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleApprove(asset.id)}
+                        disabled={
+                          openClawLoading ||
+                          connectionStatus !== "connected"
+                        }
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30 transition-colors disabled:opacity-50"
+                      >
+                        <ArrowUpCircle className="w-3.5 h-3.5" />
+                        Approve & Push to OpenClaw
+                      </button>
+                      <button
+                        onClick={() => handleReject(asset.id)}
+                        disabled={openClawLoading}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                      >
+                        <ShieldX className="w-3.5 h-3.5" />
+                        Reject & Reconfigure
+                      </button>
+                    </div>
+                    {/* Feedback textarea for rejection */}
+                    <textarea
+                      value={rejectFeedback[asset.id] || ""}
+                      onChange={(e) =>
+                        setRejectFeedback((prev) => ({
+                          ...prev,
+                          [asset.id]: e.target.value,
+                        }))
+                      }
+                      placeholder="Feedback for reconfiguration (required for rejection)…"
+                      rows={2}
+                      className="input-field resize-none text-xs"
+                      maxLength={1000}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* OpenClaw Activity Feed */}
+      {activityFeed.length > 0 && (
+        <div className="card-elevated p-6">
+          <h3 className="text-sm font-semibold text-surface-700 dark:text-surface-300 mb-4 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-blue-500" />
+            OpenClaw Activity
+          </h3>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {activityFeed.map((event, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-2 text-xs text-surface-500"
+              >
+                <span className="text-surface-300 dark:text-surface-600 flex-shrink-0">
+                  {new Date(event.timestamp).toLocaleTimeString()}
+                </span>
+                <span className="break-all">{event.data}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

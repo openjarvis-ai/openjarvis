@@ -38,3 +38,24 @@ CREATE TABLE IF NOT EXISTS comments (
   recording_id TEXT,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS generated_assets (
+  id TEXT PRIMARY KEY,
+  workflow_id TEXT NOT NULL,
+  opus_job_id TEXT NOT NULL,
+  type TEXT NOT NULL,
+  name TEXT NOT NULL,
+  definition TEXT NOT NULL,
+  status TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS review_sessions (
+  id TEXT PRIMARY KEY,
+  workflow_id TEXT NOT NULL,
+  opus_job_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  feedback TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);

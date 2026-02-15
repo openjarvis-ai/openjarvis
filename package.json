@@ -18,8 +18,12 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.0",
+<<<<<<< HEAD
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
+=======
+    "bufferutil": "^4.1.0",
+>>>>>>> 6052215 (feat: openclaw connection)
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "dotenv": "^17.3.1",
@@ -31,12 +35,18 @@
     "react-dom": "^18.3.0",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.3.0",
+<<<<<<< HEAD
     "three": "^0.182.0"
+=======
+    "utf-8-validate": "^6.0.6",
+    "ws": "^8.19.0"
+>>>>>>> 6052215 (feat: openclaw connection)
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",

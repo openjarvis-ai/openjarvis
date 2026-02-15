@@ -99,6 +99,54 @@ export interface DashboardStats {
   totalDuration: number;
 }
 
+// ─── OpenClaw Types ─────────────────────────────────────────
+export type OpenClawConnectionStatus = "disconnected" | "connecting" | "connected" | "error";
+
+export interface OpenClawMessage {
+  type: "agent.message" | "skills.list" | "tools.invoke" | "tools.list";
+  id: string;
+  payload: Record<string, unknown>;
+}
+
+export interface OpenClawResponse {
+  type: string;
+  id: string;
+  payload: Record<string, unknown>;
+  error?: string;
+}
+
+export interface OpenClawEvent {
+  type: "agent.message.delta" | "agent.message.complete" | "error" | "connected";
+  data: string;
+  timestamp: string;
+}
+
+export type AssetType = "tool" | "skill";
+export type AssetStatus = "pending" | "approved" | "rejected" | "pushed";
+
+export interface GeneratedAsset {
+  id: string;
+  workflowId: string;
+  opusJobId: string;
+  type: AssetType;
+  name: string;
+  definition: Record<string, unknown>;
+  status: AssetStatus;
+  createdAt: string;
+}
+
+export type ReviewStatus = "pending_review" | "approved" | "rejected" | "reconfiguring";
+
+export interface ReviewSession {
+  id: string;
+  workflowId: string;
+  opusJobId: string;
+  status: ReviewStatus;
+  feedback: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Navigation Types ────────────────────────────────────────
 export interface NavItem {
   label: string;

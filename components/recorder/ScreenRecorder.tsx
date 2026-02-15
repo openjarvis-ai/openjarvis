@@ -74,6 +74,71 @@ export function ScreenRecorder() {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const handleViewScreenshots = async () => {
+    if (!recordedBlob) return;
+    setExtractingToView(true);
+    clearScreenshots();
+    try {
+      toast("Extracting one frame per second…", "info");
+      const frames = await extractFramesOnePerSecond(recordedBlob, duration);
+      if (frames.length === 0) {
+        toast("No frames could be extracted from the video.", "error");
+        setExtractingToView(false);
+        return;
+      }
+      const urls = frames.map((blob) => URL.createObjectURL(blob));
+      setScreenshotUrls(urls);
+      toast(`Showing ${urls.length} screenshot(s).`, "success");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Failed to extract frames.", "error");
+    } finally {
+      setExtractingToView(false);
+    }
+  };
+
+  const pollOpusJob = async (jobExecutionId: string, workflowId: string) => {
+    const maxAttempts = 20;
+    const pollInterval = 3000;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const res = await fetch("/api/opus-poll", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobExecutionId, workflowId }),
+        });
+        const data = await res.json();
+
+        if (data.data?.status === "COMPLETED") {
+          const decision = data.data.decision;
+          if (decision) {
+            toast("✓ Opus approved! Tools/skills generated.", "success");
+          } else {
+            toast("⚠ Opus decision: false. Check workflows for details.", "info");
+          }
+          return;
+        }
+
+        if (data.data?.status === "FAILED") {
+          toast("Opus job failed.", "error");
+          return;
+        }
+
+        // Still in progress, wait before next poll
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        }
+      } catch {
+        // Continue polling on error
+      }
+    }
+
+    toast("Polling timeout. Check workflows page for results.", "info");
+  };
+
+>>>>>>> 6052215 (feat: openclaw connection)
   const handleSendFramesToOpus = async () => {
     if (!recordedBlob) return;
     setSendingFrames(true);
@@ -98,7 +163,13 @@ export function ScreenRecorder() {
       });
       const data = await res.json();
       if (data.success) {
-        toast(`${data.count} screenshot(s) sent to Opus successfully!`, "success");
+        toast(`${data.screenshotCount || data.count} screenshot(s) sent to Opus successfully!`, "success");
+
+        // Start polling for job completion
+        if (data.jobExecutionId) {
+          toast("Polling Opus job for results...", "info");
+          pollOpusJob(data.jobExecutionId, data.workflowId || "wf_from_recording");
+        }
       } else {
         toast(data.message || "Failed to send screenshots to Opus.", "error");
       }

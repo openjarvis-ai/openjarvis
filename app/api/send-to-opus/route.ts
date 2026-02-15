@@ -27,7 +27,7 @@ function parseCommentToOpusPayload(comment: string): OpusJobPayload {
   try {
     // Try to parse as JSON first
     const jsonData = JSON.parse(comment);
-    
+
     // Check for Review Feedback structure
     if (jsonData.date && jsonData.reviewer_id && jsonData.feedback_text) {
       payload.reviewFeedback = {
@@ -36,18 +36,18 @@ function parseCommentToOpusPayload(comment: string): OpusJobPayload {
         feedback_text: jsonData.feedback_text,
       };
     }
-    
+
     // Check for Session Metadata structure
     if (jsonData.timestamp && jsonData.session_id && jsonData.active_applications) {
       payload.sessionMetadata = {
         timestamp: jsonData.timestamp,
         session_id: jsonData.session_id,
-        active_applications: Array.isArray(jsonData.active_applications) 
-          ? jsonData.active_applications 
+        active_applications: Array.isArray(jsonData.active_applications)
+          ? jsonData.active_applications
           : [],
       };
     }
-    
+
     // Check for Screen Captures structure
     if (jsonData.screen_captures && Array.isArray(jsonData.screen_captures)) {
       payload.screenCaptures = jsonData.screen_captures.map((capture: { image_file: string }) => ({
@@ -101,19 +101,32 @@ function buildJobPayloadSchemaInstance(payload: OpusJobPayload): Record<string, 
 
 export async function POST(request: NextRequest) {
   let body: SendCommentPayload | null = null;
+<<<<<<< HEAD
   try {
     body = await request.json() as SendCommentPayload;
 
     console.log("[send-to-opus] Using hardcoded workflowId:", OPUS_WORKFLOW_ID);
+=======
 
-    if (!body.comment || typeof body.comment !== "string" || body.comment.trim().length === 0) {
+  try {
+    body = await request.json();
+
+    if (!body!.workflowId || typeof body!.workflowId !== "string") {
+      return NextResponse.json(
+        { success: false, message: "workflowId is required and must be a string." },
+        { status: 400 }
+      );
+    }
+>>>>>>> 6052215 (feat: openclaw connection)
+
+    if (!body!.comment || typeof body!.comment !== "string" || body!.comment.trim().length === 0) {
       return NextResponse.json(
         { success: false, message: "comment is required and must be a non-empty string." },
         { status: 400 }
       );
     }
 
-    if (body.comment.length > 2000) {
+    if (body!.comment.length > 2000) {
       return NextResponse.json(
         { success: false, message: "comment must be 2000 characters or fewer." },
         { status: 400 }
@@ -121,7 +134,7 @@ export async function POST(request: NextRequest) {
     }
 
     const allowedKeys = new Set(["workflowId", "comment", "recordingId"]);
-    const extraKeys = Object.keys(body).filter((k) => !allowedKeys.has(k));
+    const extraKeys = Object.keys(body!).filter((k) => !allowedKeys.has(k));
     if (extraKeys.length > 0) {
       return NextResponse.json(
         {
@@ -143,13 +156,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse comment into structured Opus payload
-    const opusPayload = parseCommentToOpusPayload(body.comment);
+    const opusPayload = parseCommentToOpusPayload(body!.comment);
     const jobPayloadSchemaInstance = buildJobPayloadSchemaInstance(opusPayload);
 
     if (Object.keys(jobPayloadSchemaInstance).length === 0) {
       return NextResponse.json(
         { success: false, message: "Unable to parse comment into valid Opus data format." },
         { status: 400 }
+      );
+    }
+
+    // Opus workflow ID from env (the Opus platform workflow, not internal workflowId)
+    const opusWorkflowId = process.env.OPUS_WORKFLOW_ID;
+    if (!opusWorkflowId) {
+      return NextResponse.json(
+        { success: false, message: "OPUS_WORKFLOW_ID not configured." },
+        { status: 500 }
       );
     }
 
@@ -161,8 +183,13 @@ export async function POST(request: NextRequest) {
         "x-service-key": serviceKey,
       },
       body: JSON.stringify({
+<<<<<<< HEAD
         workflowId: OPUS_WORKFLOW_ID,
         title: `OpenJarvis Feedback - ${body.recordingId || "Manual Entry"}`,
+=======
+        workflowId: opusWorkflowId,
+        title: `OpenJarvis Feedback - ${body!.recordingId || "Manual Entry"}`,
+>>>>>>> 6052215 (feat: openclaw connection)
         description: `Feedback submission from OpenJarvis at ${new Date().toISOString()}`,
       }),
     });
@@ -171,9 +198,9 @@ export async function POST(request: NextRequest) {
       const errorText = await initiateResponse.text();
       console.error("Opus initiate job failed:", initiateResponse.status, errorText);
       return NextResponse.json(
-        { 
-          success: false, 
-          message: `Failed to initiate Opus job: ${initiateResponse.status} ${initiateResponse.statusText}` 
+        {
+          success: false,
+          message: `Failed to initiate Opus job: ${initiateResponse.status} ${initiateResponse.statusText}`
         },
         { status: 502 }
       );
@@ -199,9 +226,9 @@ export async function POST(request: NextRequest) {
       const errorText = await executeResponse.text();
       console.error("Opus execute job failed:", executeResponse.status, errorText);
       return NextResponse.json(
-        { 
-          success: false, 
-          message: `Failed to execute Opus job: ${executeResponse.status} ${executeResponse.statusText}` 
+        {
+          success: false,
+          message: `Failed to execute Opus job: ${executeResponse.status} ${executeResponse.statusText}`
         },
         { status: 502 }
       );
@@ -216,6 +243,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       opusJobId: executeData.jobExecutionId,
     });
+<<<<<<< HEAD
   } catch (err) {
     console.error("Send to Opus failed:", err);
 
@@ -240,12 +268,40 @@ export async function POST(request: NextRequest) {
       } catch (dbErr) {
         console.error("DB fallback failed:", dbErr);
       }
+=======
+  } catch (error) {
+    console.error("Error in send-to-opus route:", error);
+
+    // Fallback: save comment to DB even if Opus call fails
+    if (body?.workflowId && body?.comment) {
+      const commentId = `cmt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      const now = new Date().toISOString();
+
+      await db.insert(comments).values({
+        id: commentId,
+        workflowId: body.workflowId,
+        comment: body.comment.trim(),
+        recordingId: body.recordingId ?? null,
+        createdAt: now,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Comment saved locally (Opus was unreachable).",
+        commentId,
+        timestamp: now,
+      });
+>>>>>>> 6052215 (feat: openclaw connection)
     }
 
     return NextResponse.json(
       {
         success: false,
+<<<<<<< HEAD
         message: err instanceof Error ? err.message : "Invalid request body.",
+=======
+        message: error instanceof Error ? error.message : "Invalid request body."
+>>>>>>> 6052215 (feat: openclaw connection)
       },
       { status: 500 }
     );

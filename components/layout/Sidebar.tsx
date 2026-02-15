@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import {
   Zap,
   Menu,
 } from "lucide-react";
+import type { OpenClawConnectionStatus } from "@/types";
 
 const navigation = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -21,10 +22,38 @@ const navigation = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
+const statusDotColors: Record<OpenClawConnectionStatus, string> = {
+  connected: "bg-emerald-500",
+  connecting: "bg-amber-500 animate-pulse",
+  disconnected: "bg-surface-400",
+  error: "bg-red-500",
+};
+
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openClawStatus, setOpenClawStatus] =
+    useState<OpenClawConnectionStatus>("disconnected");
+
+  // Poll OpenClaw connection status
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch("/api/openclaw/connect");
+        const data = await res.json();
+        if (data.success) {
+          setOpenClawStatus(data.data.status);
+        }
+      } catch {
+        setOpenClawStatus("disconnected");
+      }
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -107,6 +136,34 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {/* OpenClaw status */}
+        <div
+          className={cn(
+            "px-4 py-3 border-t border-surface-200/60 dark:border-surface-800/60",
+            collapsed && "px-0 flex justify-center"
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center gap-2.5",
+              collapsed && "justify-center"
+            )}
+          >
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full flex-shrink-0",
+                statusDotColors[openClawStatus]
+              )}
+              title={`OpenClaw: ${openClawStatus}`}
+            />
+            {!collapsed && (
+              <span className="text-xs text-surface-400 truncate">
+                OpenClaw: {openClawStatus}
+              </span>
+            )}
+          </div>
+        </div>
 
         {/* Collapse toggle — desktop only */}
         <div className="hidden lg:flex items-center justify-center p-3 border-t border-surface-200/60 dark:border-surface-800/60">
