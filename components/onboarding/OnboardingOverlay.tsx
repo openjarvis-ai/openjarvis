@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Video,
@@ -61,19 +62,24 @@ const steps = [
 ];
 
 export function OnboardingOverlay() {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || pathname !== "/dashboard") return;
     try {
       const dismissed = localStorage.getItem(ONBOARDING_STORAGE_KEY);
       if (!dismissed) setIsVisible(true);
     } catch {
       setIsVisible(false);
     }
-  }, []);
+  }, [mounted, pathname]);
 
   const dismiss = () => {
     try {
@@ -105,32 +111,27 @@ export function OnboardingOverlay() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-title"
       aria-describedby="onboarding-description"
     >
-      <div className="card-elevated w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col animate-fade-in shadow-xl">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col rounded-2xl border border-surface-200/80 dark:border-surface-700/80 bg-white dark:bg-surface-900 shadow-2xl animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-surface-200 dark:border-surface-700">
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center",
-                "bg-gradient-to-br from-brand-500 to-brand-700"
-              )}
-            >
+        <div className="flex items-center justify-between px-6 py-5 border-b border-surface-200/80 dark:border-surface-700/80">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-brand-500 to-brand-700 shadow-sm">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display text-lg font-medium text-surface-800 dark:text-surface-200">
+            <span className="font-display text-lg font-medium text-surface-900 dark:text-surface-100">
               OpenJarvis
             </span>
           </div>
           <button
             type="button"
             onClick={dismiss}
-            className="btn-ghost p-2 text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+            className="p-2.5 rounded-xl text-surface-500 hover:text-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 dark:hover:text-surface-300 transition-colors"
             aria-label="Skip onboarding"
           >
             <X className="w-5 h-5" />
@@ -138,25 +139,25 @@ export function OnboardingOverlay() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-8 space-y-6">
           <div
             className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center",
-              step.gradient ? `bg-gradient-to-br ${step.gradient}` : "bg-brand-100 dark:bg-brand-900/30"
+              "w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm",
+              step.gradient ? `bg-gradient-to-br ${step.gradient}` : "bg-brand-50 dark:bg-brand-900/30"
             )}
           >
             <Icon
               className={cn(
-                "w-7 h-7",
+                "w-8 h-8",
                 step.gradient ? "text-white" : "text-brand-600 dark:text-brand-400"
               )}
             />
           </div>
           <div>
-            <h2 id="onboarding-title" className="text-xl font-semibold text-surface-900 dark:text-surface-100">
+            <h2 id="onboarding-title" className="text-2xl font-semibold text-surface-900 dark:text-surface-100 tracking-tight">
               {step.title}
             </h2>
-            <p className="text-sm text-brand-600 dark:text-brand-400 font-medium mt-1">
+            <p className="text-sm text-brand-600 dark:text-brand-400 font-medium mt-1.5">
               {step.subtitle}
             </p>
           </div>
@@ -164,11 +165,11 @@ export function OnboardingOverlay() {
             {step.description}
           </p>
           {step.features && (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {step.features.map((f, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
-                  {f}
+                <li key={i} className="flex items-center gap-3 text-sm text-surface-600 dark:text-surface-400">
+                  <span className="w-2 h-2 rounded-full bg-brand-500 flex-shrink-0" />
+                  <span>{f}</span>
                 </li>
               ))}
             </ul>
@@ -176,7 +177,7 @@ export function OnboardingOverlay() {
         </div>
 
         {/* Footer */}
-        <div className="p-5 pt-0 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-surface-200 dark:border-surface-700">
+        <div className="px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-surface-200/80 dark:border-surface-700/80 bg-surface-50/50 dark:bg-surface-800/30">
           <div className="flex items-center gap-2">
             {steps.map((_, i) => (
               <button
@@ -184,22 +185,22 @@ export function OnboardingOverlay() {
                 type="button"
                 onClick={() => setCurrentStep(i)}
                 className={cn(
-                  "w-2 h-2 rounded-full transition-all",
+                  "h-2 rounded-full transition-all duration-300",
                   i === currentStep
-                    ? "bg-brand-600 w-6"
-                    : "bg-surface-300 dark:bg-surface-600 hover:bg-surface-400"
+                    ? "w-6 bg-brand-600"
+                    : "w-2 bg-surface-300 dark:bg-surface-600 hover:bg-surface-400 dark:hover:bg-surface-500"
                 )}
                 aria-label={`Go to step ${i + 1}`}
                 aria-current={i === currentStep ? "step" : undefined}
               />
             ))}
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             {!isFirst && (
               <button
                 type="button"
                 onClick={prev}
-                className="btn-secondary"
+                className="btn-secondary px-4 py-2.5 rounded-xl"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back
@@ -209,13 +210,13 @@ export function OnboardingOverlay() {
               <Link
                 href="/dashboard"
                 onClick={dismiss}
-                className="btn-primary flex-1 sm:flex-none"
+                className="btn-primary px-5 py-2.5 rounded-xl font-medium flex-1 sm:flex-initial justify-center"
               >
                 Get Started
                 <Monitor className="w-4 h-4" />
               </Link>
             ) : (
-              <button type="button" onClick={next} className="btn-primary flex-1 sm:flex-none">
+              <button type="button" onClick={next} className="btn-primary px-5 py-2.5 rounded-xl font-medium flex-1 sm:flex-initial">
                 Next
                 <ChevronRight className="w-4 h-4" />
               </button>
