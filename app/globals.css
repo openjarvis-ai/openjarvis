@@ -153,3 +153,16 @@
 .recording-indicator {
   animation: recording-glow 1.5s ease-in-out infinite;
 }
+
+/* Landing page gradient mesh */
+.landing-gradient {
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(10, 124, 255, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(10, 124, 255, 0.08), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(10, 124, 255, 0.06), transparent);
+}
+
+.landing-grid {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
