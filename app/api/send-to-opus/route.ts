@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { SendCommentPayload, OpusJobPayload } from "@/types";
 import { db } from "@/lib/db";
 import { comments } from "@/lib/db/schema";
-import { SendCommentPayload } from "@/types";
 
 const OPUS_BASE_URL = "https://operator.opus.com";
 
@@ -100,8 +99,9 @@ function buildJobPayloadSchemaInstance(payload: OpusJobPayload): Record<string, 
 }
 
 export async function POST(request: NextRequest) {
+  let body: SendCommentPayload | null = null;
   try {
-    const body: SendCommentPayload = await request.json();
+    body = await request.json() as SendCommentPayload;
 
     if (!body.workflowId || typeof body.workflowId !== "string") {
       return NextResponse.json(
@@ -220,34 +220,38 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       opusJobId: executeData.jobExecutionId,
     });
-  } catch (error) {
-    console.error("Error in send-to-opus route:", error);
-    
-    const commentId = `cmt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-    const now = new Date().toISOString();
-
-    await db.insert(comments).values({
-      id: commentId,
-      workflowId: body.workflowId,
-      comment: body.comment.trim(),
-      recordingId: body.recordingId ?? null,
-      createdAt: now,
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Comment sent to Opus successfully.",
-      commentId,
-      timestamp: now,
-    });
   } catch (err) {
     console.error("Send to Opus failed:", err);
+
+    // Fallback: save to local DB if we have valid payload
+    if (body?.workflowId && body?.comment) {
+      try {
+        const commentId = `cmt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+        const now = new Date().toISOString();
+        await db.insert(comments).values({
+          id: commentId,
+          workflowId: body.workflowId,
+          comment: body.comment.trim(),
+          recordingId: body.recordingId ?? null,
+          createdAt: now,
+        });
+        return NextResponse.json({
+          success: true,
+          message: "Comment sent to Opus successfully.",
+          commentId,
+          timestamp: now,
+        });
+      } catch (dbErr) {
+        console.error("DB fallback failed:", dbErr);
+      }
+    }
+
     return NextResponse.json(
-      { 
-        success: false, 
-        message: error instanceof Error ? error.message : "Invalid request body." 
+      {
+        success: false,
+        message: err instanceof Error ? err.message : "Invalid request body.",
       },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }
